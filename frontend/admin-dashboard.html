@@ -121,16 +121,16 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.html">Home</a>
+                        <a class="nav-link btn btn-outline-primary ms-2 px-3 py-1" href="index.html">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="catalog.html">Catalog</a>
+                        <a class="nav-link btn btn-outline-primary ms-2 px-3 py-1" href="catalog.html">Catalog</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="profile.html">User Profile</a>
+                        <a class="nav-link btn btn-outline-primary ms-2 px-3 py-1" href="profile.html">User Profile</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active btn btn-outline-primary ms-2 px-3 py-1" aria-current="page" href="admin-dashboard.html" style="border-width: 2px;">Admin Dashboard</a>
+                        <a class="nav-link active" aria-current="page" href="admin-dashboard.html" style="border-width: 2px;">Admin Dashboard</a>
                     </li>
                 </ul>
             </div>
@@ -170,7 +170,7 @@
             <div class="col-md-3">
                 <div class="stat-card warning">
                     <div class="stat-number" id="newThisWeek">0</div>
-                    <div class="stat-label">New This Week</div>
+                    <div class="stat-label">New Book This Week</div>
                 </div>
             </div>
             <div class="col-md-3">
@@ -214,6 +214,7 @@
         </div>
     </div>
 
+    
     <!-- Add Book Modal -->
     <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -249,7 +250,7 @@
             </div>
         </div>
     </div>
-
+    
     <!-- Edit Book Modal -->
     <div class="modal fade" id="editBookModal" tabindex="-1" aria-labelledby="editBookModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -287,8 +288,244 @@
         </div>
     </div>
 
+    <!-- User Management Section -->
+    <div class="dashboard-card container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="section-title mb-0">User Management</h3>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ManageUser">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    Manage User
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Time</th>
+                            <th>Actions</th>
+                            <th>Object</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookTableBody">
+                        <tr>
+                            <td colspan="5" class="text-center">Loading books...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Modal -->
+    <div class="modal fade" id="ManageUser" tabindex="-1" aria-labelledby="MemberLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="MemberLabel">User Management</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+    <!-- ManageUser at popup -->
+    <div class="modal-body">
+
+        <!-- Navigation -->
+        <ul class="nav nav-pills nav-fill mb-4" id="userManagementTab" role="tablist">
+
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active bg-success text-white" id="create-user-tab" data-bs-toggle="pill" data-bs-target="#create-user" type="button">
+                    Create User
+                </button>
+            </li>
+
+            <li class="nav-item mx-2" role="presentation">
+                <button class="nav-link bg-warning text-dark" id="reset-password-tab" data-bs-toggle="pill" data-bs-target="#reset-password" type="button">
+                    Reset Password
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button class="nav-link bg-danger text-white" id="delete-user-tab" data-bs-toggle="pill" data-bs-target="#delete-user" type="button">
+                    Delete User
+                </button>
+            </li>
+
+        </ul>
+
+        <!-- Content -->
+        <div class="tab-content">
+
+            <!-- CREATE USER -->
+            <div class="tab-pane fade show active" id="create-user">
+
+                <div class="card border-success">
+                    <div class="card-body">
+
+                        <h5 class="card-title mb-3">
+                            Create New User
+                        </h5>
+
+                        <form id="createUserForm">
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Username
+                                </label>
+                                <input type="text"
+                                    class="form-control" id="newUsername" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Email
+                                </label>
+                                <input type="email" class="form-control" id="newEmail" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Role
+                                </label>
+
+                                <select class="form-select"
+                                        id="newRole">
+
+                                    <option value="member">
+                                        Member
+                                    </option>
+
+                                    <option value="librarian">
+                                        Librarian
+                                    </option>
+
+                                    <option value="admin">
+                                        Admin
+                                    </option>
+
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Country ID
+                                </label>
+
+                                <input type="text" class="form-control" id="countryId" placeholder="IDN">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Date of Birth
+                                </label>
+
+                                <input type="date" class="form-control" id="birthDate">
+                            </div>
+
+                            <button type="button" class="btn btn-success w-100" onclick="createUser()">
+                                Create User
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESET PASSWORD -->
+            <div class="tab-pane fade"
+                id="reset-password">
+
+                <div class="card border-warning">
+                    <div class="card-body">
+
+                        <h5 class="card-title mb-3">
+                            Reset Password
+                        </h5>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Username
+                            </label>
+
+                            <input type="text" class="form-control" id="resetUsername">
+                        </div>
+
+                        <button type="button" class="btn btn-warning w-100" onclick="resetPassword()">
+                            Reset Password
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DELETE USER -->
+            <div class="tab-pane fade" id="delete-user">
+
+                <div class="card border-danger">
+                    <div class="card-body">
+
+                        <h5 class="card-title mb-3">
+                            Delete User
+                        </h5>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Username
+                            </label>
+                            <input type="text" class="form-control" id="deleteUsername">
+                        </div>
+                        <button type="button" class="btn btn-danger w-100" onclick="deleteUser()">
+                            Delete User
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function generatePassword(length = 8) {
+            const chars =
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+            let password = "";
+
+            for (let i = 0; i < length; i++) {
+                password += chars.charAt(
+                    Math.floor(Math.random() * chars.length)
+                );
+            }
+
+            return password;
+        }
+
+        function createUser() {
+            const password = generatePassword();
+
+            const user = {
+                username: document.getElementById("newUsername").value,
+                email: document.getElementById("newEmail").value,
+                role: document.getElementById("newRole").value,
+                countryId: document.getElementById("countryId").value,
+                birthDate: document.getElementById("birthDate").value,
+                password: password
+            };
+
+            console.log(user);
+
+            alert(
+                "User berhasil dibuat.\n\n" +
+                "Password sementara: " + password +
+                "\n\nUser harus mengganti password setelah login pertama."
+            );
+        }
+
+
+    </script>
+    <!-- <script>
         const API_URL = '/api';
         let token = localStorage.getItem('token');
 
@@ -453,6 +690,6 @@
                 alert('Error deleting book');
             }
         }
-    </script>
+    </script> -->
 </body>
 </html>
