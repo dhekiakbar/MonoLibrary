@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Monolibrary</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
+        .navbar { background-color: #fff; border-bottom: 1px solid #eef0f2; }
+        .navbar-brand { font-weight: 700; color: #2c3e50 !important; }
+        .dashboard-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .stat-card { background: #667eea; color: white; border-radius: 12px; padding: 20px; }
+        .stat-card.danger { background: #f5576c; } .stat-card.success { background: #00c4cc; } .stat-card.warning { background: #ffc107; }
+        .stat-number { font-size: 2rem; font-weight: 700; }
+        .section-title { font-weight: 600; color: #2c3e50; border-bottom: 2px solid #0d6efd; padding-bottom: 10px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">Monolibrary Admin</a>
+            <div class="d-flex">
+                <a href="index.html" class="btn btn-outline-secondary me-2">Home</a>
+                <button onclick="logout()" class="btn btn-danger">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        
+        <div class="row g-3 mb-4">
+            <div class="col-md-3"><div class="stat-card"><div class="stat-number" id="totalBooks">0</div><div>Total Books</div></div></div>
+            <div class="col-md-3"><div class="stat-card success"><div class="stat-number" id="totalUsers">0</div><div>Total Users</div></div></div>
+            <div class="col-md-3"><div class="stat-card warning"><div class="stat-number" id="pendingLoans">0</div><div>Pending Requests</div></div></div> <div class="col-md-3"><div class="stat-card danger"><div class="stat-number" id="activeReaders">0</div><div>Active Readers</div></div></div>
+        </div>
+
+        <div class="dashboard-card border-warning border-start border-4">
+            <h3 class="section-title text-warning">Loan Requests (Pending)</h3>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light"><tr><th>ID</th><th>User</th><th>Book</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="loanTableBody"><tr><td colspan="6" class="text-center">Loading requests...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <h3 class="section-title">User Management</h3>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+                    <tbody id="userTableBody"><tr><td colspan="5" class="text-center">Loading users...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="dashboard-card mt-4">
+            <h3 class="section-title">Manage Announcements (UC-11)</h3>
+            
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <input type="text" id="annTitle" class="form-control mb-2" placeholder="Title (e.g. Libur Lebaran)">
+                </div>
+                <div class="col-md-6">
+                    <input type="text" id="annContent" class="form-control mb-2" placeholder="Content (e.g. Perpustakaan tutup tgl...)">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" onclick="addAnnouncement()">Post</button>
+                </div>
+            </div>
+
+            <ul class="list-group" id="announcementListAdmin">
+                <li class="list-group-item text-center">Loading...</li>
+            </ul>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="section-title mb-0">Book Management</h3>
+                <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Book</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead><tr><th>Title</th><th>Category</th><th>Stock</th><th>Actions</th></tr></thead>
+                    <tbody id="bookTableBody"><tr><td colspan="4" class="text-center">Loading books...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="bookModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="modalTitle">Book</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="bookForm"><input type="hidden" id="bookId"><div class="mb-2"><label>Title</label><input type="text" class="form-control" id="bookTitle" required></div><div class="mb-2"><label>Author</label><input type="text" class="form-control" id="bookAuthor" required></div><div class="row mb-2"><div class="col"><label>Year</label><input type="number" class="form-control" id="bookYear" required></div><div class="col"><label>Stock</label><input type="number" class="form-control" id="bookStock" required></div></div><div class="mb-2"><label>Category</label><select class="form-select" id="bookCategory"><option>Fiksi</option><option>Non-Fiksi</option><option>Teknologi</option></select></div><div class="mb-2"><label>Desc</label><textarea class="form-control" id="bookDesc"></textarea></div></form></div><div class="modal-footer"><button type="button" class="btn btn-primary" onclick="submitBook()">Save</button></div></div></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        const token = localStorage.getItem('token');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!token) return window.location.href = 'login.html';
+            loadStats();
+            loadLoanRequests();
+            loadUsers();
+            loadBooks();
+            loadAnnouncementsAdmin();
+        });
+
+        async function loadAnnouncementsAdmin() {
+            try {
+                const res = await fetch(`${API_URL}/announcements`);
+                const data = await res.json();
+                const list = document.getElementById('announcementListAdmin');
+                
+                if (data.length === 0) return list.innerHTML = '<li class="list-group-item text-center">No announcements</li>';
+
+                list.innerHTML = data.map(item => `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${item.title}</strong> - <span class="text-muted">${item.content}</span>
+                            <br><small class="text-muted">${new Date(item.created_at).toLocaleDateString()}</small>
+                        </div>
+                        <button class="btn btn-sm btn-danger" onclick="deleteAnnouncement(${item.id})">Delete</button>
+                    </li>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        // 3. Fungsi Tambah
+        async function addAnnouncement() {
+            const title = document.getElementById('annTitle').value;
+            const content = document.getElementById('annContent').value;
+            if(!title || !content) return alert("Fill all fields");
+
+            try {
+                const res = await fetch(`${API_URL}/announcements`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
+                    body: JSON.stringify({ title, content })
+                });
+                if (res.ok) {
+                    document.getElementById('annTitle').value = '';
+                    document.getElementById('annContent').value = '';
+                    loadAnnouncementsAdmin(); // Refresh list
+                    alert('Announcement posted!');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // 4. Fungsi Hapus
+        async function deleteAnnouncement(id) {
+            if(!confirm('Delete this announcement?')) return;
+            const res = await fetch(`${API_URL}/announcements/${id}`, {
+                method: 'DELETE',
+                headers: {'Authorization': `Bearer ${token}`}
+            });
+            if (res.ok) loadAnnouncementsAdmin();
+        }
+
+        // --- LOAN REQUESTS  ---
+        async function loadLoanRequests() {
+            try {
+                const res = await fetch(`${API_URL}/loans/all?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const loans = await res.json();
+                const tbody = document.getElementById('loanTableBody');
+                
+                // Update Badge Statistik
+                document.getElementById('pendingLoans').textContent = loans.length || 0;
+
+                if (loans.length === 0) return tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No pending requests</td></tr>';
+                
+                tbody.innerHTML = loans.map(l => `
+                    <tr>
+                        <td>${l.id}</td>
+                        <td>${l.user_name}</td>
+                        <td>${l.book_title}</td>
+                        <td>${new Date(l.borrow_date).toLocaleDateString()}</td>
+                        <td><span class="badge bg-warning text-dark">Pending</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="verifyLoan(${l.id}, 'approve')">Approve</button>
+                            <button class="btn btn-sm btn-danger" onclick="verifyLoan(${l.id}, 'reject')">Reject</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function verifyLoan(loanId, action) {
+            if(!confirm(`Are you sure you want to ${action}?`)) return;
+            try {
+                const res = await fetch(`${API_URL}/loans/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ loanId, action })
+                });
+                if(res.ok) { loadLoanRequests(); loadStats(); alert(`Loan ${action}ed`); }
+            } catch (e) { alert('Error'); }
+        }
+
+        // --- USER MANAGEMENT  ---
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API_URL}/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const users = await res.json();
+                document.getElementById('totalUsers').textContent = users.length;
+                
+                document.getElementById('userTableBody').innerHTML = users.map(u => `
+                    <tr>
+                        <td>${u.id}</td><td>${u.name}</td><td>${u.email}</td>
+                        <td><span class="badge ${u.role==='Admin'?'bg-danger':'bg-primary'}">${u.role}</span></td>
+                        <td>${u.role!=='Admin' ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${u.id})">Del</button>` : '-'}</td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function deleteUser(id) {
+            if(!confirm('Delete this user?')) return;
+            const res = await fetch(`${API_URL}/users/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            if(res.ok) loadUsers();
+        }
+
+        // --- BOOK MANAGEMENT & STATS ---
+        async function loadStats() {
+            const res = await fetch(`${API_URL}/users/stats`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const stats = await res.json();
+            document.getElementById('activeReaders').textContent = stats.activeReaders;
+        }
+
+        async function loadBooks() {
+            const res = await fetch(`${API_URL}/books`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const books = await res.json();
+            document.getElementById('totalBooks').textContent = books.length;
+            document.getElementById('bookTableBody').innerHTML = books.map(b => `
+                <tr>
+                    <td>${b.title}</td><td>${b.category}</td><td>${b.stock}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="openEdit(${b.id}, '${b.title}', '${b.author}', ${b.year}, ${b.stock}, '${b.category}', '${b.description}')">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteBook(${b.id})">Del</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+
+        let isEdit = false;
+        function openAddModal() { isEdit=false; document.getElementById('bookForm').reset(); new bootstrap.Modal(document.getElementById('bookModal')).show(); }
+        function openEdit(id, title, author, year, stock, cat, desc) { 
+            isEdit=true; document.getElementById('bookId').value=id; 
+            document.getElementById('bookTitle').value=title; document.getElementById('bookAuthor').value=author;
+            document.getElementById('bookYear').value=year; document.getElementById('bookStock').value=stock;
+            document.getElementById('bookCategory').value=cat; document.getElementById('bookDesc').value=desc;
+            new bootstrap.Modal(document.getElementById('bookModal')).show();
+        }
+        async function submitBook() {
+            const data = {
+                title: document.getElementById('bookTitle').value, author: document.getElementById('bookAuthor').value,
+                year: document.getElementById('bookYear').value, stock: document.getElementById('bookStock').value,
+                category: document.getElementById('bookCategory').value, description: document.getElementById('bookDesc').value
+            };
+            const method = isEdit ? 'PUT' : 'POST';
+            const url = isEdit ? `${API_URL}/books/${document.getElementById('bookId').value}` : `${API_URL}/books`;
+            
+            await fetch(url, { method, headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`}, body: JSON.stringify(data) });
+            bootstrap.Modal.getInstance(document.getElementById('bookModal')).hide(); loadBooks();
+        }
+        async function deleteBook(id) {
+            if(confirm('Delete book?')) { await fetch(`${API_URL}/books/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadBooks(); }
+        }
+        function logout() { localStorage.removeItem('token'); window.location.href='login.html'; }
+    </script>
+</body>
+</html>
