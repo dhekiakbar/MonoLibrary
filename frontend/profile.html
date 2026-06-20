@@ -13,6 +13,7 @@
             background-color: #f8f9fa;
         }
 
+        /* Navbar Styling */
         .navbar {
             background-color: #fff;
             border-bottom: 1px solid #eef0f2;
@@ -34,6 +35,7 @@
             font-weight: 700;
         }
 
+        /* Profile Card */
         .profile-card {
             background: white;
             border-radius: 12px;
@@ -158,10 +160,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.html">Home</a>
+                        <a class="nav-link btn btn-outline-primary ms-2 px-3 py-1" href="index.html">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="catalog.html">Catalog</a>
+                        <a class="nav-link btn btn-outline-primary ms-2 px-3 py-1" href="catalog.html">Catalog</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="profile.html">User Profile</a>
@@ -173,7 +175,6 @@
 
     <div class="container mt-5 mb-5">
         <div class="row">
-            
             <div class="col-lg-4 mb-4">
                 <div class="profile-card">
                     <div class="profile-header">
@@ -211,20 +212,19 @@
             </div>
 
             <div class="col-lg-8">
-                
                 <div class="profile-card mb-4">
                     <h3 class="section-title">Activity Statistics</h3>
                     
                     <div class="row g-4">
                         <div class="col-md-4">
                             <div class="stat-card">
-                                <div class="stat-number" id="statTotalBooks">0</div> 
-                                <div class="stat-label">Total History</div>
+                                <div class="stat-number">12</div>
+                                <div class="stat-label">Books Read</div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="stat-card" style="background: #f5576c;">
-                                <div class="stat-number" id="statActiveBooks">0</div>
+                                <div class="stat-number">8</div>
                                 <div class="stat-label">Currently Reading</div>
                             </div>
                         </div>
@@ -240,14 +240,38 @@
                 <div class="profile-card">
                     <h3 class="section-title">Recent Activity</h3>
                     
-                    <div class="list-group list-group-flush" id="loanList">
-                        <div class="text-center p-3 text-muted">Loading reading history...</div>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Started reading "The Art of Monochrome"</h6>
+                                    <small class="text-muted">2 days ago</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Completed "Feathered Wisdom"</h6>
+                                    <small class="text-muted">5 days ago</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Added "Digital Dreams" to collection</h6>
+                                    <small class="text-muted">1 week ago</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-            </div> </div>
+            </div>
+        </div>
     </div>
 
+    <!-- Edit Profile Modal -->
     <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -276,22 +300,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const userJson = localStorage.getItem('user');
-            const user = userJson ? JSON.parse(userJson) : null;
-            const adminButton = document.querySelector('a[href="admin-dashboard.html"]');
-
-            if (adminButton) {
-                if (!user || user.role !== 'Admin') {
-                    const navItem = adminButton.closest('.nav-item');
-                    if (navItem) navItem.style.display = 'none';
-                    else adminButton.style.display = 'none';
-                }
-            }
-            
-            loadProfile();
-        });
+    <!-- <script>
+        // Load user profile on page load
+        loadProfile();
 
         async function loadProfile() {
             const token = localStorage.getItem('token');
@@ -303,101 +314,27 @@
             }
 
             try {
-                const response = await fetch('http://localhost:3000/api/users/profile', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const response = await fetch('/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
                 });
 
                 if (response.ok) {
                     const data = await response.json();
                     displayProfile(data.user);
-                    loadUserLoans(token);
                 } else {
                     throw new Error('Failed to load profile');
                 }
             } catch (error) {
                 console.error('Error loading profile:', error);
-                alert('Session expired. Please login again.');
+                alert('Failed to load profile. Please login again.');
                 window.location.href = 'login.html';
             }
         }
 
-        async function loadUserLoans(token) {
-            try {
-                const response = await fetch('http://localhost:3000/api/loans/my-loans', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (response.ok) {
-                    const loans = await response.json();
-                    
-                    const activeLoans = loans.filter(loan => loan.status === 'borrowed');
-                    document.getElementById('statTotalBooks').textContent = loans.length;
-                    document.getElementById('statActiveBooks').textContent = activeLoans.length;
-
-                    const listContainer = document.getElementById('loanList');
-                    
-                    if (loans.length === 0) {
-                        listContainer.innerHTML = '<div class="p-3 text-center text-muted">No reading history yet.</div>';
-                        return;
-                    }
-
-                    listContainer.innerHTML = loans.map(loan => `
-                        <div class="list-group-item px-0">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-1 fw-bold">${loan.title}</h6>
-                                    <small class="text-muted">
-                                        Author: ${loan.author} <br>
-                                        Date: ${new Date(loan.borrow_date).toLocaleDateString()}
-                                    </small>
-                                    <div class="mt-1">
-                                        <span class="badge ${loan.status === 'borrowed' ? 'bg-warning text-dark' : 'bg-success'}">
-                                            ${loan.status.toUpperCase()}
-                                        </span>
-                                    </div>
-                                </div>
-                                ${loan.status === 'borrowed' ? `
-                                <button class="btn btn-sm btn-outline-primary" onclick="returnBook(${loan.id}, ${loan.book_id})">
-                                    Return Book
-                                </button>` : ''}
-                            </div>
-                        </div>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error('Error loading loans:', error);
-            }
-        }
-
-        async function returnBook(loanId, bookId) {
-            if(!confirm("Are you sure you want to return this book?")) return;
-
-            const token = localStorage.getItem('token');
-            try {
-                const response = await fetch('http://localhost:3000/api/loans/return', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ loanId, bookId })
-                });
-
-                const data = await response.json();
-
-                if(response.ok) {
-                    alert("Book returned successfully!");
-                    loadUserLoans(token); 
-                } else {
-                    alert("Failed: " + (data.message || data.error));
-                }
-            } catch (error) {
-                console.error(error);
-                alert("System error. Check console.");
-            }
-        }
-
         function displayProfile(user) {
+            // Get initials for avatar
             const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
             
             document.getElementById('profileAvatar').textContent = initials;
@@ -408,42 +345,14 @@
             roleElement.textContent = user.role;
             roleElement.className = `profile-role ${user.role.toLowerCase()}`;
             
+            // Populate edit form
             document.getElementById('editName').value = user.name;
             document.getElementById('editEmail').value = user.email;
         }
 
-        async function saveProfile() {
-            const name = document.getElementById('editName').value;
-            const email = document.getElementById('editEmail').value;
-            const token = localStorage.getItem('token');
-
-            try {
-                const response = await fetch('http://localhost:3000/api/users/profile', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ name, email })
-                });
-
-                if (response.ok) {
-                    alert('Profile updated successfully!');
-                    
-                    // Tutup modal manual (Bootstrap vanilla)
-                    const modalEl = document.getElementById('editProfileModal');
-                    const modal = bootstrap.Modal.getInstance(modalEl);
-                    modal.hide();
-
-                    // Reload halaman atau load ulang data
-                    loadProfile();
-                } else {
-                    alert('Failed to update profile');
-                }
-            } catch (error) {
-                console.error(error);
-                alert('Error updating profile');
-            }
+        function saveProfile() {
+            // This would make an API call to update the profile
+            alert('Profile update functionality will be implemented with backend support');
         }
 
         function logout() {
@@ -451,6 +360,6 @@
             localStorage.removeItem('user');
             window.location.href = 'login.html';
         }
-    </script>
+    </script> -->
 </body>
 </html>
