@@ -61,10 +61,35 @@ app.get('/api/dbtest', (req, res) => {
     });
 });
 
+app.get('/api/categories', (req, res) => {
+    const query = 'SELECT * FROM categories ORDER BY name ASC';
+    db.query(query, (err, results) => {
+        if (err) return res.status(500).json({ message: 'Database error', error: err });
+        res.json(results);
+    });
+});
+
+app.post('/api/categories', (req, res) => {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ message: 'Category name is required' });
+
+    const query = 'INSERT INTO categories (name) VALUES (?)';
+    db.query(query, [name], (err, results) => {
+        if (err) return res.status(500).json({ message: 'Gagal menambah kategori (Mungkin nama sudah ada)', error: err });
+        res.status(201).json({ message: 'Category added successfully', id: results.insertId });
+    });
+});
+
+app.delete('/api/categories/:id', (req, res) => {
+    const { id } = req.params;
+    const query = 'DELETE FROM categories WHERE id = ?';
+    db.query(query, [id], (err, results) => {
+        if (err) return res.status(500).json({ message: 'Gagal menghapus kategori', error: err });
+        res.json({ message: 'Category deleted successfully' });
+    });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server work on PORT ${PORT}`);
 });
-
-
-
