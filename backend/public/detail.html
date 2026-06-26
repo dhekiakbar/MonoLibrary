@@ -100,6 +100,112 @@
             color: #2c3e50;
             margin-bottom: 15px;
         }
+
+        .review-summary-card,
+        .review-form-card,
+        .review-item {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .review-summary-card {
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .avg-rating {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #2c3e50;
+            line-height: 1;
+        }
+        
+        .star-display {
+            font-size: 1.4rem;
+            color: #f5b301;
+            margin: 10px 0;
+        }
+        
+        .review-count {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+        
+        .btn-review {
+            background: #5486b8;
+            color: #fff;
+            border: none;
+        }
+        
+        .btn-review:hover {
+            background: #2c3e50;
+            color: #fff;
+        }
+        
+        .review-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .review-item {
+            padding: 18px;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        
+        .review-user {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .review-date {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .review-stars {
+            color: #f5b301;
+            margin: 6px 0;
+        }
+        
+        .review-comment {
+            color: #495057;
+            margin: 0;
+        }
+        
+        .review-form-card {
+            padding: 24px;
+        }
+        
+        .star-input {
+            direction: rtl;
+            display: inline-flex;
+            gap: 4px;
+        }
+        
+        .star-input input {
+            display: none;
+        }
+        
+        .star-input label {
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .star-input input:checked ~ label,
+        .star-input label:hover,
+        .star-input label:hover ~ label {
+            color: #f5b301;
+        }
     </style>
 </head>
 <body>
@@ -179,6 +285,15 @@
                                 <span class="meta-label">Category:</span>
                                 <span id="bookCategory">Art & Design</span>
                             </div>
+
+                            <div class="meta-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-tag" viewBox="0 0 16 16">
+                                    <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 .071A31.493 31.493 0 0 1 8 14.58a31.493 31.493 0 0 1-2.206-2.569c-.726-.95-1.436-2.009-1.96-3.07C3.304 7.88 3 6.87 3 6a5 5 0 1 1 10 0c0 .87-.304 1.88-.834 2.94z"/>   
+                                    <path d="M8 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                                </svg>
+                                <span class="meta-label">Rack:</span>
+                                <span id="bookRack">A-01</span>
+                            </div>
                         </div>
 
                         <div class="d-flex gap-2 mb-4">
@@ -210,6 +325,59 @@
                                 John Doe is a renowned designer and author with over 15 years of experience in the field of visual arts. His work has been featured in numerous international exhibitions and publications.
                             </p>
                         </div>
+
+                        <section class="review-section mt-5">
+                            <h4 class="section-heading mb-4">Review & Rating</h4>
+                        
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <div class="review-summary-card">
+                                        <div class="avg-rating" id="avgRating">0.0</div>
+                                        <div class="star-display" id="avgStars">☆☆☆☆☆</div>
+                                        <div class="review-count" id="reviewCount">(0 Review)</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div id="reviewList" class="review-list">
+                                    </div>
+                                </div>
+                            </div>
+                        
+                            <div class="review-form-card mt-4" id="reviewForm">
+                                <h5 class="mb-3">Your Review</h5>
+                        
+                                <div class="mb-3">
+                                    <label class="form-label">Rating</label>
+                                    <div class="star-input">
+                                        <input type="radio" name="rating" id="star5" value="5">
+                                        <label for="star5">★</label>
+                        
+                                        <input type="radio" name="rating" id="star4" value="4">
+                                        <label for="star4">★</label>
+                        
+                                        <input type="radio" name="rating" id="star3" value="3">
+                                        <label for="star3">★</label>
+                        
+                                        <input type="radio" name="rating" id="star2" value="2">
+                                        <label for="star2">★</label>
+                        
+                                        <input type="radio" name="rating" id="star1" value="1">
+                                        <label for="star1">★</label>
+                                    </div>
+                                </div>
+                        
+                                <div class="mb-3">
+                                    <textarea
+                                        id="reviewComment"
+                                        class="form-control"
+                                        rows="4"
+                                        placeholder="Write your review here.."
+                                    ></textarea>
+                                </div>
+                        
+                                <button class="btn btn-primary" onclick="submitReview()">Send</button>
+                            </div>
+                        </section>
                     </div>
                 </div>
             </div>

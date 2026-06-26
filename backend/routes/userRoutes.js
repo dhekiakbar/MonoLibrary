@@ -13,6 +13,3 @@ router.delete('/:id', authMiddleware, roleMiddleware(['Admin']), UserController.
 router.put('/profile', authMiddleware, UserController.updateProfile);
 
 module.exports = router;
-
-
-
