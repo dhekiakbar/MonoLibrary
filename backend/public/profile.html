@@ -206,12 +206,46 @@
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
                             Edit Profile
                         </button>
+                        <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                            Change Password
+                        </button>
                         <button class="btn btn-outline-danger" onclick="logout()">
                             Logout
                         </button>
                     </div>
                 </div>
             </div>
+
+            <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePasswordForm">
+                        <div class="mb-3">
+                            <label for="oldPassword" class="form-label">Password Lama</label>
+                            <input type="password" class="form-control" id="oldPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Password Baru</label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmNewPassword" class="form-label">Konfirmasi Password Baru</label>
+                            <input type="password" class="form-control" id="confirmNewPassword" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-success" onclick="submitChangePassword()">Simpan Password</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
             <div class="col-lg-8">
                 
@@ -427,12 +461,10 @@
                 if (response.ok) {
                     alert('Profile updated successfully!');
                     
-                    // Tutup modal manual (Bootstrap vanilla)
                     const modalEl = document.getElementById('editProfileModal');
                     const modal = bootstrap.Modal.getInstance(modalEl);
                     modal.hide();
 
-                    // Reload halaman atau load ulang data
                     loadProfile();
                 } else {
                     alert('Failed to update profile');
@@ -447,6 +479,49 @@
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = 'login.html';
+        }
+
+        async function submitChangePassword() {
+            const oldPassword = document.getElementById('oldPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (!oldPassword || !newPassword || !confirmNewPassword) {
+                return alert('Semua kolom password harus diisi!');
+            }
+            if (newPassword !== confirmNewPassword) {
+                return alert('Password baru dan konfirmasi password tidak cocok!');
+            }
+
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await fetch('http://localhost:3000/api/users/change-password', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ oldPassword, newPassword })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Password berhasil diperbarui! Silakan gunakan password baru untuk login selanjutnya.');
+                    
+                    document.getElementById('changePasswordForm').reset();
+                    
+                    const modalEl = document.getElementById('changePasswordModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+                } else {
+                    alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Sistem sedang bermasalah. Coba periksa koneksi Anda.');
+            }
         }
     </script>
 </body>
