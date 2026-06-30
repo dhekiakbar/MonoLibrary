@@ -66,6 +66,22 @@ CREATE TABLE loans (
     FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+-- ====================================================
+-- TABEL: review (ULASAN BUKU)
+-- ====================================================
+CREATE TABLE review (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    book_id INT NOT NULL,
+    review_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    rating INT NOT NULL,
+    review_detail TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 -- ====================================================
 -- SEEDING DATA: Users
 -- ====================================================
@@ -120,6 +136,14 @@ INSERT INTO books (title, author, year, description, isbn, publisher, category, 
 ('Sang Pemimpi', 'Andrea Hirata', 2006, 'Kelanjutan Laskar Pelangi tentang mimpi dan perjuangan di Paris.', '978-979-24-2454-1', 'Bentang Pustaka', 'Fiksi Indonesia', 6, 'Tidak diketahui'),
 ('Perahu Kertas', 'Dee Lestari', 2009, 'Kisah romansa modern tentang dua jiwa yang saling mencari.', '978-979-24-2961-4', 'Bentang Pustaka', 'Romance Indonesia', 7, 'Tidak diketahui'),
 ('Negeri 5 Menara', 'Ahmad Fuadi', 2009, 'Inspirasi dari pesantren tentang persahabatan dan meraih mimpi.', '978-602-8496-06-7', 'Gramedia Pustaka Utama', 'Fiksi Indonesia', 6, 'Tidak diketahui');
+
+-- ====================================================
+-- INSERT REVIEW DATA
+-- ====================================================
+INSERT INTO review (user_id, book_id, rating, review_detail) VALUES 
+(3, 2, 3, "Woo josjis bukunya"),
+(3, 5, 5, "Mantap bukunya");
+
 
 -- ====================================================
 -- VERIFIKASI DATA

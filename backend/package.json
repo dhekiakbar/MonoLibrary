@@ -20,5 +20,8 @@
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.15.3"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "allowScripts": {
+    "bcrypt@5.1.1": true
+  }
 }
