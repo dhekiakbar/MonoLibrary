@@ -465,10 +465,10 @@
                         `;
                     });
                 } else {
-                    list.innerHTML = "<p class='no-review'>Belum ada ulasan untuk buku ini.</p>";
+                    list.innerHTML = "<p class='no-review'>No reviews yet.</p>";
                 }
             } catch (error) {
-                console.error("Gagal memuat review:", error);
+                console.error("Failed to load review.", error);
             }
         }
         
@@ -476,19 +476,19 @@
             try {
                 const token = localStorage.getItem("token");
                 if(!token){
-                    alert("login dlu");
+                    alert("Please login first.");
                     return;
                 }
                 const bookId = getBookIdFromURL();
                 if (!bookId) {
-                    alert("ID Buku tidak ditemukan di URL!");
+                    alert("Book ID not found.");
                     return;
                 }
                 const ratingElement = document.querySelector('input[name="rating"]:checked');
                 const rating = ratingElement ? ratingElement.value : null;
                 const comment = document.getElementById("reviewComment").value;
                 if (!rating) {
-                    alert("Silakan pilih rating terlebih dahulu!");
+                    alert("Please choose rating first.");
                     return;
                 }
                 const response = await fetch("http://localhost:3000/api/reviews", {
@@ -507,62 +507,57 @@
                 if (contentType && contentType.includes("application/json")) {
                     const result = await response.json();
                     if (response.ok) {
-                        alert(result.message || "Review berhasil dikirim!");
+                        alert(result.message || "Review submitted!");
                         document.getElementById("reviewComment").value = "";
                         loadReviews();
                         } else {
-                            alert(result.message || "Gagal mengirim review");
+                            alert(result.message || "Failed to submit review.");
                         }
                 } else {
                     const textError = await response.text();
-                    console.error("Server Error Response:", textError);
-                    alert("Terjadi kesalahan pada server. Silakan cek konsol backend.");
+                    console.error("Server Error.", textError);
+                    alert("System Error.");
                 }
             } catch (error) {
-                console.error("Error saat mengirim ulasan:", error);
-                alert("Gagal terhubung ke server.");
+                console.error("Error while submitting review.", error);
+                alert("Failed to connect to server.");
             }
         }
- 
-    const btnBorrow = document.getElementById('btnBorrow');
-    if (btnBorrow) {
-        btnBorrow.addEventListener('click', borrowBook);
-    }
-
-    async function borrowBook() {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert('Please login to borrow books!');
-            window.location.href = 'login.html';
-            return;
+        
+        const btnBorrow = document.getElementById('btnBorrow');
+        if (btnBorrow) {
+            btnBorrow.addEventListener('click', borrowBook);
         }
-
-        if (!confirm('Are you sure you want to borrow this book?')) return;
-
-        try {
-            const response = await fetch('http://localhost:3000/api/loans/borrow', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify({ bookId: bookId }) 
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                alert('Success! ' + data.message);
-                window.location.href = 'profile.html';
-            } else {
-                alert('Failed: ' + (data.error || data.message)); 
+        
+        async function borrowBook() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please login to borrow books!');
+                window.location.href = 'login.html';
+                return;
             }
-
-        } catch (error) {
-            console.error('Error borrowing book:', error);
-            alert('System error. Please try again later.');
-        }
-    }   
+            if (!confirm('Are you sure you want to borrow this book?')) return;
+            try {
+                const response = await fetch('http://localhost:3000/api/loans/borrow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ bookId: bookId }) 
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Success! ' + data.message);
+                    window.location.href = 'profile.html';
+                } else {
+                    alert('Failed: ' + (data.error || data.message)); 
+                }
+            } catch (error) {
+                console.error('Error borrowing book:', error);
+                alert('System error. Please try again later.');
+            }
+        }  
         function displayBookDetails(book) {
             document.getElementById('bookTitle').textContent = book.title;
             document.getElementById('bookAuthor').textContent = `By ${book.author}`;
