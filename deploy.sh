@@ -101,8 +101,12 @@ echo ""
 
 # 6. Test Backend Connection
 print_info "Testing backend..."
-node -e "require('./config/db');" 2>&1 | grep -q "Succes connect to database" && print_success "Database connection successful" || print_error "Database connection failed"
-echo ""
+if node config/test-db.js; then
+    print_success "Database connection successful"
+else
+    print_error "Database connection failed"
+    exit 1
+fi
 
 # 7. Setup PM2
 print_info "Setting up PM2 process manager..."
@@ -131,17 +135,166 @@ sleep 2
 curl -s http://localhost:3000/api/healthcheck | grep -q "Server its Work" && print_success "API is working!" || print_error "API test failed"
 echo ""
 
+
+#=======APACHE===========
 # 10. Apache Configuration
-print_info "Apache configuration..."
-print_warning "To complete Apache setup, run these commands:"
-echo ""
-echo "  sudo a2enmod proxy proxy_http rewrite headers"
-echo "  sudo cp ../monolibrary.conf /etc/apache2/sites-available/"
-echo "  sudo nano /etc/apache2/sites-available/monolibrary.conf  # Edit domain"
-echo "  sudo a2ensite monolibrary.conf"
-echo "  sudo apache2ctl configtest"
-echo "  sudo systemctl restart apache2"
-echo ""
+#print_info "Apache configuration..."
+#print_warning "To complete Apache setup, run these commands:"
+#echo ""
+#echo "  sudo a2enmod proxy proxy_http rewrite headers"
+#echo "  sudo cp ../monolibrary.conf /etc/apache2/sites-available/"
+#echo "  sudo nano /etc/apache2/sites-available/monolibrary.conf  # Edit domain"
+#echo "  sudo a2ensite monolibrary.conf"
+#echo "  sudo apache2ctl configtest"
+#echo "  sudo systemctl restart apache2"
+#echo ""
+
+
+# ====================================================
+# 11. Apache Configuration
+# ====================================================
+
+# ====================================================
+# Detect Linux Distribution
+# ====================================================
+detect_distro() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        DISTRO=$ID
+        DISTRO_LIKE=$ID_LIKE
+    else
+        DISTRO=$(uname -s)
+        DISTRO_LIKE=""
+    fi
+}
+
+detect_distro
+
+print_info "Detected distro: $DISTRO"
+
+
+install_apache() {
+
+    if command -v apachectl >/dev/null || command -v httpd >/dev/null; then
+        return
+    fi
+
+    case "$DISTRO" in
+        arch|manjaro|cachyos)
+            sudo pacman -Sy --noconfirm apache
+            ;;
+
+        ubuntu|debian)
+            sudo apt update
+            sudo apt install -y apache2
+            ;;
+
+        fedora)
+            sudo dnf install -y httpd
+            ;;
+
+        centos|rocky|almalinux|rhel)
+            sudo yum install -y httpd
+            ;;
+    esac
+}
+
+install_apache
+
+
+print_info "Configuring Apache..."
+
+
+
+case "$DISTRO" in
+    arch|manjaro|cachyos)
+	print_info "Creating Apache VirtualHost..."
+sudo mkdir -p /etc/httpd/conf/extra
+sudo tee /etc/httpd/conf/extra/monolibrary.conf >/dev/null <<'EOF'
+<VirtualHost *:80>
+
+    ServerName localhost
+	
+    ProxyRequests Off
+    ProxyPreserveHost On
+
+    ProxyPass / http://127.0.0.1:3006/
+    ProxyPassReverse / http://127.0.0.1:3006/
+
+    ErrorLog /var/log/httpd/monolibrary-error.log
+    CustomLog /var/log/httpd/monolibrary-access.log combined
+	
+</VirtualHost>
+EOF
+
+	# Tambahkan include jika belum ada
+	if ! grep -q "Include conf/extra/monolibrary.conf" /etc/httpd/conf/httpd.conf; then
+	    echo "" | sudo tee -a /etc/httpd/conf/httpd.conf >/dev/null
+	    echo "Include conf/extra/monolibrary.conf" | sudo tee -a /etc/httpd/conf/httpd.conf >/dev/null
+	fi
+
+	sudo httpd -t || exit 1
+	sudo systemctl enable httpd
+	sudo systemctl restart httpd
+	
+        ;;
+
+    ubuntu|debian)
+
+	sudo tee /etc/apache2/sites-available/monolibrary.conf >/dev/null <<'EOF'
+	<VirtualHost *:80>
+
+	    ServerName localhost
+
+	    ProxyRequests Off
+	    ProxyPreserveHost On
+
+	    ProxyPass / http://127.0.0.1:3006/
+	    ProxyPassReverse / http://127.0.0.1:3006/
+
+	    ErrorLog ${APACHE_LOG_DIR}/monolibrary-error.log
+	    CustomLog ${APACHE_LOG_DIR}/monolibrary-access.log combined
+
+	</VirtualHost>
+	EOF
+
+	sudo a2enmod proxy proxy_http rewrite headers
+	sudo a2ensite monolibrary.conf
+	sudo apache2ctl configtest || exit 1
+	sudo systemctl restart apache2
+
+        ;;
+
+    fedora|rhel|centos|rocky|almalinux)
+
+        APACHE_CONF="/etc/httpd/conf/httpd.conf"
+
+        for module in proxy proxy_http rewrite headers; do
+            sudo sed -i \
+                "s/^#LoadModule ${module}_module/LoadModule ${module}_module/" \
+                "$APACHE_CONF"
+        done
+
+        sudo mkdir -p /etc/httpd/conf.d
+
+        sudo cp ../monolibrary.conf \
+            /etc/httpd/conf.d/
+
+        sudo httpd -t || exit 1
+
+        sudo systemctl enable httpd
+        sudo systemctl restart httpd
+        ;;
+
+    *)
+
+        print_warning "Unsupported distro: $DISTRO"
+
+        print_warning "Please configure Apache manually."
+
+        ;;
+
+esac
 
 # 11. Summary
 echo "======================================================"
