@@ -402,6 +402,7 @@
 
         if (bookId) {
             loadBookDetails(bookId);
+            loadReviews(bookId);
         }
 
         async function loadBookDetails(id) {
@@ -425,6 +426,101 @@
                 }
             } catch (error) {
                 console.error('Error loading book details:', error);
+            }
+        }
+
+
+        function getBookIdFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+        
+        async function loadReviews() {
+            try {
+                const bookId = getBookIdFromURL();
+                if (!bookId) return;
+                const response = await fetch(`http://localhost:3000/api/reviews/${bookId}`);
+                const data = await response.json();
+                document.getElementById("avgRating").innerHTML = data.averageRating || 0;
+                document.getElementById("reviewCount").innerHTML = `(${data.totalReview || 0} Review)`;
+                const list = document.getElementById("reviewList");
+                list.innerHTML = "";
+                if (data.reviews && data.reviews.length > 0) {
+                    data.reviews.forEach(review => {
+                        list.innerHTML += `
+                        <div class="review-item">
+                            <div class="review-header">
+                                <span class="review-user">${review.name}</span>
+                                <span class="review-date">
+                                    ${new Date(review.created_at).toLocaleDateString()}
+                                </span>
+                            </div>
+                            <div class="review-stars">
+                                ${"★".repeat(review.rating)}
+                            </div>
+                            <p class="review-comment">
+                                ${review.comment || ''}
+                            </p>
+                        </div>
+                        `;
+                    });
+                } else {
+                    list.innerHTML = "<p class='no-review'>Belum ada ulasan untuk buku ini.</p>";
+                }
+            } catch (error) {
+                console.error("Gagal memuat review:", error);
+            }
+        }
+        
+        async function submitReview() {
+            try {
+                const token = localStorage.getItem("token");
+                if(!token){
+                    alert("login dlu");
+                    return;
+                }
+                const bookId = getBookIdFromURL();
+                if (!bookId) {
+                    alert("ID Buku tidak ditemukan di URL!");
+                    return;
+                }
+                const ratingElement = document.querySelector('input[name="rating"]:checked');
+                const rating = ratingElement ? ratingElement.value : null;
+                const comment = document.getElementById("reviewComment").value;
+                if (!rating) {
+                    alert("Silakan pilih rating terlebih dahulu!");
+                    return;
+                }
+                const response = await fetch("http://localhost:3000/api/reviews", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        bookId: parseInt(bookId),
+                        rating: parseInt(rating),
+                        comment: comment
+                    })
+                });
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const result = await response.json();
+                    if (response.ok) {
+                        alert(result.message || "Review berhasil dikirim!");
+                        document.getElementById("reviewComment").value = "";
+                        loadReviews();
+                        } else {
+                            alert(result.message || "Gagal mengirim review");
+                        }
+                } else {
+                    const textError = await response.text();
+                    console.error("Server Error Response:", textError);
+                    alert("Terjadi kesalahan pada server. Silakan cek konsol backend.");
+                }
+            } catch (error) {
+                console.error("Error saat mengirim ulasan:", error);
+                alert("Gagal terhubung ke server.");
             }
         }
  

@@ -10,6 +10,8 @@ const LoanRoutes = require('./routes/LoanRoutes');
 
 const announcementRoutes = require('./routes/announcementRoutes');
 
+const ReviewRoutes = require("./routes/ReviewRoutes");
+
 const app = express();
 
 // Configure CORS properly
@@ -22,6 +24,7 @@ const corsOptions = {
         'http://localhost:3000',
         'http://localhost:8080',
         'http://127.0.0.1',
+        'http://127.0.0.1:3000',
         'null'
     ],
     credentials: true,
@@ -41,6 +44,7 @@ app.use('/api/books', bookRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/loans', LoanRoutes);
 app.use('/api/announcements', announcementRoutes);
+app.use("/api/reviews", ReviewRoutes);
 
 // Test routes
 app.get('/api/healthcheck', (req, res) => {
